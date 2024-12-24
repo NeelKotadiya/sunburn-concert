@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #ticketDetails {
+            margin-top: 20px;
+        }
+
+        .ticket-info {
+            background: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Ticket Details</h1>
+        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819" alt="Ticket Image"> <!-- Sample placeholder image -->
+        <div id="ticketDetails"></div>
+    </div>
+
+    <script>
+        // Function to fetch and display ticket details
+        async function fetchAndDisplayTicketDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('transactionId');
+
+            if (!transactionId) {
+                document.getElementById('ticketDetails').innerHTML = '<p>No transaction ID provided.</p>';
+                return;
+            }
+
+            console.log('Fetching ticket details for transactionId:', transactionId);
+
+            try {
+                // Make a call to the new endpoint
+                const response = await fetch(`/tickets/get-ticket?transactionId=${transactionId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json(); // Get the error message
+                    document.getElementById('ticketDetails').innerHTML = `<p>${errorData.message}</p>`;
+                    return; // Exit the function if response is not ok
+                }
+                if(response.status == 400)
+                {
+                    // Display ticket details
+                document.getElementById('ticketDetails').innerHTML = `
+                    <div class="ticket-info">
+                        <p><strong>This ticket has already been scanned.</strong></p>
+                        
+                    </div>
+                `;
+                }
+                else{
+                
+
+                // Parse the JSON response
+                const data = await response.json();
+                const ticket = data.ticket;
+
+                // Display ticket details
+                document.getElementById('ticketDetails').innerHTML = `
+                    <div class="ticket-info">
+                        <p><strong>Name:</strong> ${ticket.name}</p>
+                        <p><strong>Email:</strong> ${ticket.email}</p>
+                        <p><strong>Ticket Type:</strong> ${ticket.ticketType}</p>
+                        <p><strong>Transaction ID:</strong> ${ticket.transactionId}</p>
+                        <p><strong>Mobile:</strong> ${ticket.mobile}</p>
+                        <p><strong>Timestamp:</strong> ${new Date(ticket.timestamp).toLocaleString()}</p>
+                    </div>
+                `;
+                }
+            } catch (error) {
+                console.error('Error fetching ticket details:', error);
+                document.getElementById('ticketDetails').innerHTML = '<p>An error occurred while fetching ticket details.</p>';
+            }
+        }
+
+        // Fetch ticket details on page load
+        window.onload = fetchAndDisplayTicketDetails;
+    </script>
+</body>
+</html>
